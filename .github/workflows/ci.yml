@@ -31,3 +31,9 @@ jobs:
 
       - name: Run tests with coverage
         run: poetry run pytest --cov=src --cov-report=term --cov-fail-under=70
+
+      - name: Cyclomatic complexity with radon
+        run: poetry run radon cc -a -s src/ --min C
+
+      - name: Code duplication with jscpd
+        run: npx jscpd src/ --min-lines 5 --min-tokens 50 --threshold 5
