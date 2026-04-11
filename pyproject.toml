@@ -25,3 +25,6 @@ flake8 = ">=6.0.0"
 bandit = ">=1.7.0"
 radon = ">=5.0.0"
 httpx = ">=0.24.0"
+
+[tool.bandit]
+exclude_dirs = ["tests", "src/tests"]
