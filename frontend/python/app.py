@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 from datetime import date
 from typing import Any
 
@@ -315,28 +314,12 @@ def render_create_form(
                 step=0.1,
             )
 
-        cost_mode = st.radio(
-            "Cost input",
-            options=["I know total cost", "I know price per liter"],
-            horizontal=True,
+        total_cost = st.number_input(
+            "Total cost",
+            min_value=0.01,
+            value=2000.0,
+            step=1.0,
         )
-
-        if cost_mode == "I know total cost":
-            total_cost = st.number_input(
-                "Total cost",
-                min_value=0.01,
-                value=2000.0,
-                step=1.0,
-            )
-            price_per_liter = None
-        else:
-            total_cost = None
-            price_per_liter = st.number_input(
-                "Price per liter",
-                min_value=0.01,
-                value=55.0,
-                step=0.1,
-            )
 
         fuel_type = st.text_input("Fuel type (optional)", value="")
         station_name = st.text_input("Station name (optional)", value="")
@@ -355,12 +338,9 @@ def render_create_form(
         "refueled_at": refueled_at.isoformat(),
         "odometer_km": odometer_km,
         "liters": liters,
+        "total_cost": total_cost,
     }
 
-    if total_cost is not None:
-        payload["total_cost"] = total_cost
-    if price_per_liter is not None:
-        payload["price_per_liter"] = price_per_liter
     if fuel_type.strip():
         payload["fuel_type"] = fuel_type.strip()
     if station_name.strip():
@@ -374,7 +354,9 @@ def render_create_form(
         st.error(f"Could not create refueling: {exc}")
         return
 
-    st.session_state["show_success_toast"] = f"Saved refueling entry with id {created['id']}"
+    st.session_state["show_success_toast"] = (
+        f"Saved refueling entry with id {created['id']}"
+    )
     st.rerun()
 
 
@@ -384,65 +366,55 @@ def render_history_panel(
     device_id: str | None,
 ) -> None:
     st.subheader("Saved Refuelings")
-    st.caption("Use this section to review entries and delete a wrong one.")
+    st.caption(
+        "Use this section to review your refueling entries and delete "
+        "incorrect ones."
+    )
 
     if not history:
         st.info("No refueling entries yet for this device.")
         return
 
-    frame = history_to_dataframe(history).copy()
-    frame["refueled_at"] = frame["refueled_at"].dt.date
+    # Header row
+    widths = [0.7, 1.5, 1.5, 1.2, 1.3, 2.0, 1.2]
+    header = st.columns(widths)
+    header[0].markdown("**ID**")
+    header[1].markdown("**Date**")
+    header[2].markdown("**Odometer**")
+    header[3].markdown("**Liters**")
+    header[4].markdown("**Cost**")
+    header[5].markdown("**Consumption**")
+    header[6].markdown("**Action**")
 
-    display = frame.rename(
-        columns={
-            "id": "ID",
-            "refueled_at": "Date",
-            "odometer_km": "Odometer (km)",
-            "liters": "Liters",
-            "total_cost": "Total cost",
-            "distance_since_previous_km": "Distance since previous (km)",
-            "consumption_l_per_100km": "Consumption (L/100 km)",
-            "fuel_type": "Fuel type",
-            "station_name": "Station",
-        }
-    )
+    st.divider()
 
-    ordered_columns = [
-        "ID",
-        "Date",
-        "Odometer (km)",
-        "Liters",
-        "Total cost",
-        "Distance since previous (km)",
-        "Consumption (L/100 km)",
-        "Fuel type",
-        "Station",
-    ]
-    available_columns = [
-        column for column in ordered_columns if column in display.columns
-    ]
-    display = display[available_columns].fillna("-")
-
-    st.table(display)
-
-    st.caption("Delete action: click the button on the right of a row.")
-
-    # Show latest records first for faster cleanup.
+    # Show latest records first
     records_for_delete = sorted(
         history,
-        key=lambda item: int(item["id"]),
+        key=lambda item: (str(item.get("refueled_at", "")), int(item["id"])),
         reverse=True,
     )
 
     for item in records_for_delete:
-        row = st.columns([1.0, 1.7, 1.7, 1.4, 1.4, 1.2], vertical_alignment="center")
-        row[0].markdown(f"**ID {item['id']}**")
-        row[1].write(str(item["refueled_at"]))
-        row[2].write(f"{item['odometer_km']} km")
-        row[3].write(f"{item['liters']} L")
-        row[4].write(f"Cost: {item['total_cost']}")
+        row = st.columns(widths, vertical_alignment="center")
+        
+        row[0].write(str(item["id"]))
+        
+        # Display nicely formatted date
+        date_str = str(item.get("refueled_at", "")).split("T")[0]
+        row[1].write(date_str)
+        
+        row[2].write(f"{item.get('odometer_km', 0)} km")
+        row[3].write(f"{item.get('liters', 0)} L")
+        row[4].write(str(item.get("total_cost", 0)))
+        
+        cons = item.get("consumption_l_per_100km")
+        if cons is not None:
+            row[5].write(f"{cons:.2f} L/100km")
+        else:
+            row[5].write("—")
 
-        if row[5].button(
+        if row[6].button(
             "Delete",
             key=f"delete_row_{item['id']}",
             type="secondary",
@@ -453,7 +425,9 @@ def render_history_panel(
             except FuelTrackerApiError as exc:
                 st.error(f"Could not delete entry: {exc}")
                 return
-            st.success(f"Deleted entry id {int(item['id'])}")
+            st.session_state["show_success_toast"] = (
+                f"Deleted entry id {item['id']}"
+            )
             st.rerun()
 
 
@@ -477,7 +451,7 @@ def main() -> None:
     client = get_client(base_url)
 
     try:
-        health = client.healthcheck()
+        client.healthcheck()
         history = client.list_refuelings(device_id=active_device_id)
         stats = client.get_stats(device_id=active_device_id)
     except FuelTrackerApiError as exc:
