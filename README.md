@@ -64,8 +64,8 @@ $env:FUEL_TRACKER_DB_PATH="./data/fuel_tracker.db"
 ## Quality checks
 
 ```bash
-poetry run flake8 src/
-poetry run bandit -r src/
-poetry run pytest --cov=src --cov-report=term --cov-fail-under=70
-poetry run radon cc -a -s src/
+poetry run flake8 src/ frontend/
+poetry run bandit -r src/ frontend/
+poetry run pytest --cov=src --cov=frontend --cov-report=term --cov-fail-under=70
+poetry run radon cc -a -s src/ frontend/
 ```
