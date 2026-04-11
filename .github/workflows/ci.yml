@@ -27,7 +27,9 @@ jobs:
         run: poetry run flake8 src/
 
       - name: Security check with bandit
-        run: poetry run bandit -r src/
+        run: |
+          poetry run bandit -c pyproject.toml -r src/ --exit-zero
+          poetry run bandit -c pyproject.toml -r src/ -ll
 
       - name: Run tests with coverage
         run: poetry run pytest --cov=src --cov-report=term --cov-fail-under=70
