@@ -3,7 +3,9 @@ name = "fuel-tracker"
 version = "0.1.0"
 description = ""
 authors = [
-    {name = "Aliya Sagdieva",email = "sagdievaaliya05@gmail.com"}
+    {name = "Aliya Sagdieva", email = "sagdievaaliya05@gmail.com"},
+    {name = "Ivan Murzin",    email = "vanya.murzin@inbox.ru"},
+    {name = "Ivan Lobazov",   email = "xzsaythjpf@gmail.com"}
 ]
 readme = "README.md"
 requires-python = ">=3.12"
@@ -11,6 +13,8 @@ dependencies = [
     "fastapi>=0.100.0",
     "uvicorn>=0.20.0",
     "streamlit>=1.30.0",
+    "pandas>=2.0.0",
+    "altair>=5.0.0"
 ]
 
 
@@ -27,4 +31,4 @@ radon = ">=5.0.0"
 httpx = ">=0.24.0"
 
 [tool.bandit]
-exclude_dirs = ["tests", "src/tests"]
+exclude_dirs = ["tests", "src/tests", "frontend/tests"]

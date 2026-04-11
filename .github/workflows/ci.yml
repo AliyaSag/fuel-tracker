@@ -24,18 +24,26 @@ jobs:
           poetry install --no-root
 
       - name: Lint with flake8
-        run: poetry run flake8 src/
+        run: |
+          poetry run flake8 src/
+          poetry run flake8 frontend/
 
       - name: Security check with bandit
         run: |
           poetry run bandit -c pyproject.toml -r src/ --exit-zero
           poetry run bandit -c pyproject.toml -r src/ -ll
+          poetry run bandit -c pyproject.toml -r frontend/ --exit-zero
+          poetry run bandit -c pyproject.toml -r frontend/ -ll
 
       - name: Run tests with coverage
-        run: poetry run pytest --cov=src --cov-report=term --cov-fail-under=70
+        run: poetry run pytest --cov=src --cov=frontend --cov-report=term --cov-fail-under=70
 
       - name: Cyclomatic complexity with radon
-        run: poetry run radon cc -a -s src/ --min C
+        run: |
+          poetry run radon cc -a -s src/ --min C
+          poetry run radon cc -a -s frontend/ --min C
 
       - name: Code duplication with jscpd
-        run: npx jscpd src/ --min-lines 5 --min-tokens 50 --threshold 5
+        run: |
+          npx jscpd src/ --min-lines 5 --min-tokens 50 --threshold 5
+          npx jscpd frontend/ --min-lines 5 --min-tokens 50 --threshold 5
