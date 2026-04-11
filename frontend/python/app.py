@@ -43,8 +43,6 @@ def inject_styles() -> None:
     st.markdown(
         """
         <style>
-        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
-
         :root {
             color-scheme: light;
         }
@@ -52,9 +50,7 @@ def inject_styles() -> None:
         .stApp {
             color: #132b44;
             background:
-                radial-gradient(circle at 6% 3%, #dff0f4 0%, transparent 35%),
-                radial-gradient(circle at 92% 4%, #fde8d8 0%, transparent 34%),
-                linear-gradient(160deg, #f9fcfb 0%, #eef5f2 50%, #f2f8f6 100%);
+                linear-gradient(160deg, #f9fcfb 0%, #eef5f2 50%, #f2f8f6 10%);
             font-family: "Manrope", "Segoe UI", sans-serif;
         }
 
@@ -82,11 +78,11 @@ def inject_styles() -> None:
             gap: 0.45rem;
             border-bottom: none !important;
         }
-        
+
         .stTabs [data-baseweb="tab-border"] {
             display: none !important;
         }
-        
+
         .stTabs [data-baseweb="tab-highlight"] {
             display: none !important;
         }
@@ -203,7 +199,9 @@ def render_metric_cards(stats: dict[str, Any], cost_unit: str) -> None:
         ),
         (
             "Avg consumption",
-            format_value(stats.get("average_consumption_l_per_100km"), " L/100"),
+            format_value(
+                stats.get("average_consumption_l_per_100km"), " L/100"
+            ),
         ),
         (
             "Avg cost per km",
@@ -248,7 +246,10 @@ def render_charts(history: list[dict[str, Any]]) -> None:
                 color=alt.value("#0f8a83"),
                 tooltip=[
                     alt.Tooltip("refueled_at:T", title="Date"),
-                    alt.Tooltip("distance_since_previous_km:Q", title="Distance"),
+                    alt.Tooltip(
+                        "distance_since_previous_km:Q",
+                        title="Distance",
+                    ),
                 ],
             )
             .properties(height=260, title="Distance Between Refuelings")
@@ -397,17 +398,17 @@ def render_history_panel(
 
     for item in records_for_delete:
         row = st.columns(widths, vertical_alignment="center")
-        
+
         row[0].write(str(item["id"]))
-        
+
         # Display nicely formatted date
         date_str = str(item.get("refueled_at", "")).split("T")[0]
         row[1].write(date_str)
-        
+
         row[2].write(f"{item.get('odometer_km', 0)} km")
         row[3].write(f"{item.get('liters', 0)} L")
         row[4].write(str(item.get("total_cost", 0)))
-        
+
         cons = item.get("consumption_l_per_100km")
         if cons is not None:
             row[5].write(f"{cons:.2f} L/100km")
@@ -440,7 +441,7 @@ def main() -> None:
     )
     inject_styles()
     render_hero()
-    
+
     if "show_success_toast" in st.session_state:
         st.toast(st.session_state.pop("show_success_toast"), icon="✅")
 
