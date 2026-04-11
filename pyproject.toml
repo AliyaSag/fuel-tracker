@@ -4,7 +4,8 @@ version = "0.1.0"
 description = ""
 authors = [
     {name = "Aliya Sagdieva", email = "sagdievaaliya05@gmail.com"},
-    {name = "Ivan Murzin", email = "vanya.murzin@inbox.ru"}
+    {name = "Ivan Murzin",    email = "vanya.murzin@inbox.ru"},
+    {name = "Ivan Lobazov",   email = "xzsaythjpf@gmail.com"}
 ]
 readme = "README.md"
 requires-python = ">=3.12"
