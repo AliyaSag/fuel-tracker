@@ -17,6 +17,12 @@ dependencies = [
     "altair>=5.0.0"
 ]
 
+[tool.pytest.ini_options]
+testpaths = ["tests", "src/tests", "frontend/tests"]
+
+pre-commit = ">=3.0.0"
+
+locust = ">=2.0.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
@@ -29,6 +35,8 @@ flake8 = ">=6.0.0"
 bandit = ">=1.7.0"
 radon = ">=5.0.0"
 httpx = ">=0.24.0"
+pre-commit = "^4.5.1"
+locust = "^2.43.4"
 
 [tool.bandit]
 exclude_dirs = ["tests", "src/tests", "frontend/tests"]
