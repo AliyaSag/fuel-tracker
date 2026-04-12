@@ -68,4 +68,5 @@ poetry run flake8 src/ frontend/
 poetry run bandit -r src/ frontend/
 poetry run pytest --cov=src --cov=frontend --cov-report=term --cov-fail-under=70
 poetry run radon cc -a -s src/ frontend/
+poetry run locust -f tests/locustfile.py --headless -u 10 -r 2 -t 30s --host http://localhost:8000 --only-summary
 ```
